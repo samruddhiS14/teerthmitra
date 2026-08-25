@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeerthMitra — National Pilgrimage Safety & Crowd Intelligence Platform</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-serif-heading { font-family: 'Cinzel', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    .bg-warm-bg { background-color: #FBF9F4; }
+    .bg-warm-card { background-color: #FFFFFF; }
+    .bg-warm-subtle { background-color: #F4EFE6; }
+    .border-warm { border-color: #E7DECE; }
+    .text-warm-dark { color: #1E293B; }
+    .text-warm-muted { color: #64748B; }
+    .bg-saffron { background-color: #D97706; }
+    .bg-saffron:hover { background-color: #B45309; }
+
+    .tab-active {
+      background-color: #FFFFFF;
+      color: #9A3412;
+      border-color: #E7DECE;
+      box-shadow: 0 2px 8px -2px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
+
+<body class="bg-warm-bg text-warm-dark min-h-screen flex flex-col antialiased selection:bg-amber-200 selection:text-amber-900">
+
+  <!-- Status Bar -->
+  <div class="bg-warm-subtle border-b border-warm px-6 py-1.5 text-xs text-warm-muted flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="font-bold text-amber-800">Autonomous Pilgrimage Safety Grid</span>
+      <span class="text-slate-300">|</span>
+      <span>Edge-Computed Real-Time Intelligence Architecture</span>
+    </div>
+    <div class="flex items-center gap-4 text-[11px]">
+      <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> Edge Vision Active</span>
+      <span>National Helpline: <strong>1800-11-2026</strong></span>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-warm px-6 py-3 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="/static/assets/brand/logo.jpg" 
+             onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1545128485-c400e7702796?w=100&auto=format&fit=crop&q=80';"
+             alt="TeerthMitra Logo" 
+             class="h-10 w-10 object-contain rounded-lg p-0.5 bg-amber-50 border border-warm shadow-sm">
+        <div>
+          <span class="font-serif-heading font-bold text-lg tracking-wider text-slate-900">TEERTH<span class="text-amber-600">MITRA</span></span>
+          <p class="text-[10px] text-warm-muted uppercase tracking-widest font-semibold">AI Crowd Resilience & Safety Grid</p>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 bg-warm-subtle p-1 rounded-xl border border-warm text-xs font-semibold">
+        <button onclick="switchTab('heritage')" id="nav-heritage" class="px-3.5 py-2 rounded-lg tab-active transition">Shrines & Heritage</button>
+        <button onclick="switchTab('twin')" id="nav-twin" class="px-3.5 py-2 rounded-lg text-warm-muted hover:text-slate-900 transition">GIS Digital Twin</button>
+        <button onclick="switchTab('booking')" id="nav-booking" class="px-3.5 py-2 rounded-lg text-warm-muted hover:text-slate-900 transition">E-Pass Desk</button>
+        <button onclick="switchTab('safety')" id="nav-safety" class="px-3.5 py-2 rounded-lg text-warm-muted hover:text-slate-900 transition">Zero-Network Tether</button>
+        <button onclick="switchTab('contact')" id="nav-contact" class="px-3.5 py-2 rounded-lg text-warm-muted hover:text-slate-900 transition">Help & Emergency</button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button onclick="triggerVoiceAssistance()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-warm-subtle border border-warm text-xs font-semibold text-amber-800 hover:bg-amber-100/60 transition">
+          <i data-lucide="volume-2" class="w-4 h-4"></i> Voice Guide
+        </button>
+        <button onclick="openSOSModal()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md shadow-red-600/20 transition">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i> SOS
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB 1: HERITAGE -->
+  <section id="tab-content-heritage" class="max-w-7xl mx-auto px-6 py-8 space-y-8 flex-1 w-full">
+    <div class="bg-gradient-to-br from-amber-50/80 via-white to-orange-50/50 border border-warm rounded-3xl p-8 shadow-sm">
+      <div class="max-w-3xl space-y-3">
+        <span class="px-3 py-1 bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold rounded-full uppercase tracking-wider">
+          AI For Smart Heritage & Governance
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-serif-heading font-extrabold text-slate-900 leading-tight">
+          Sustaining India’s Sacred Shrines Through Proactive Safety
+        </h1>
+        <p class="text-warm-muted text-sm leading-relaxed">
+          TeerthMitra integrates AI-powered spatial analytics and edge computing into India's historic temple complexes. By forecasting crowd density 15 to 30 minutes in advance, the grid prevents dangerous bottlenecks while ensuring smooth, dignified darshan for millions of pilgrims.
+        </p>
+      </div>
+    </div>
+
+    <!-- Shrine Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white border border-warm rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <img src="/static/assets/shrines/somnath.jpg" 
+               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&auto=format&fit=crop&q=80';"
+               alt="Somnath Temple" 
+               class="h-44 w-full object-cover">
+          <div class="p-5 space-y-2">
+            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">First Jyotirlinga</span>
+            <h3 class="font-serif-heading font-bold text-base text-slate-900">Shree Somnath Temple</h3>
+            <p class="text-xs text-warm-muted leading-relaxed">Located on the Arabian Sea coast in Prabhas Patan, Somnath stands as a timeless symbol of devotion and resilience.</p>
+          </div>
+        </div>
+        <div class="p-5 pt-0">
+          <button onclick="selectShrineAndGoToTwin('somnath')" class="w-full py-2 bg-warm-subtle hover:bg-amber-100 text-amber-900 border border-warm rounded-xl text-xs font-bold transition">View Live Digital Twin →</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-warm rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <img src="/static/assets/shrines/dwarka.jpg" 
+               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=600&auto=format&fit=crop&q=80';"
+               alt="Dwarkadhish Temple" 
+               class="h-44 w-full object-cover">
+          <div class="p-5 space-y-2">
+            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Char Dham Shrine</span>
+            <h3 class="font-serif-heading font-bold text-base text-slate-900">Dwarkadhish Jagat Mandir</h3>
+            <p class="text-xs text-warm-muted leading-relaxed">The sacred 5-storey shrine resting on 72 ornate limestone pillars, featuring Moksha Dwar and Swarga Dwar flow paths.</p>
+          </div>
+        </div>
+        <div class="p-5 pt-0">
+          <button onclick="selectShrineAndGoToTwin('dwarka')" class="w-full py-2 bg-warm-subtle hover:bg-amber-100 text-amber-900 border border-warm rounded-xl text-xs font-bold transition">View Live Digital Twin →</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-warm rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <img src="/static/assets/shrines/ambaji.jpg" 
+               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80';"
+               alt="Ambaji Temple" 
+               class="h-44 w-full object-cover">
+          <div class="p-5 space-y-2">
+            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">51 Shaktipeeth</span>
+            <h3 class="font-serif-heading font-bold text-base text-slate-900">Shree Ambaji Temple</h3>
+            <p class="text-xs text-warm-muted leading-relaxed">Nestled near Gabbar Hill in Banaskantha, this major Shaktipeeth worships the holy Viso Yantra.</p>
+          </div>
+        </div>
+        <div class="p-5 pt-0">
+          <button onclick="selectShrineAndGoToTwin('ambaji')" class="w-full py-2 bg-warm-subtle hover:bg-amber-100 text-amber-900 border border-warm rounded-xl text-xs font-bold transition">View Live Digital Twin →</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-warm rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <img src="/static/assets/shrines/pavagadh.jpg" 
+               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1567157577867-05ccb1388e66?w=600&auto=format&fit=crop&q=80';"
+               alt="Pavagadh Temple" 
+               class="h-44 w-full object-cover">
+          <div class="p-5 space-y-2">
+            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">UNESCO Hill Shrine</span>
+            <h3 class="font-serif-heading font-bold text-base text-slate-900">Kalika Mata Pavagadh</h3>
+            <p class="text-xs text-warm-muted leading-relaxed">Perched atop steep volcanic cliffs, requiring intensive ropeway and plateau crowd queue management.</p>
+          </div>
+        </div>
+        <div class="p-5 pt-0">
+          <button onclick="selectShrineAndGoToTwin('pavagadh')" class="w-full py-2 bg-warm-subtle hover:bg-amber-100 text-amber-900 border border-warm rounded-xl text-xs font-bold transition">View Live Digital Twin →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: GIS DIGITAL TWIN -->
+  <section id="tab-content-twin" class="hidden max-w-7xl mx-auto px-6 py-8 space-y-6 flex-1 w-full">
+    <div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-warm shadow-sm flex-wrap gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-warm-muted uppercase tracking-wider pl-2">Active Telemetry Feed:</span>
+        <div class="flex gap-2">
+          <button onclick="loadTempleTwin('somnath')" id="btn-t-somnath" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">Somnath</button>
+          <button onclick="loadTempleTwin('dwarka')" id="btn-t-dwarka" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-warm-subtle text-warm-muted hover:text-slate-900">Dwarka</button>
+          <button onclick="loadTempleTwin('ambaji')" id="btn-t-ambaji" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-warm-subtle text-warm-muted hover:text-slate-900">Ambaji</button>
+          <button onclick="loadTempleTwin('pavagadh')" id="btn-t-pavagadh" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-warm-subtle text-warm-muted hover:text-slate-900">Pavagadh</button>
+        </div>
+      </div>
+      <div class="text-xs text-warm-muted flex items-center gap-4">
+        <span>Active Headcount: <strong id="twinHeadcount" class="text-slate-900 font-mono">3,480</strong></span>
+        <span>Average Wait: <strong id="twinWait" class="text-emerald-700 font-mono">~25 mins</strong></span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 bg-white border border-warm rounded-2xl p-5 shadow-sm flex flex-col">
+        <div class="flex justify-between items-center mb-3">
+          <div>
+            <h2 id="mapShrineName" class="font-serif-heading font-bold text-base text-slate-900">Shree Somnath Jyotirlinga</h2>
+            <p id="mapShrineLoc" class="text-xs text-warm-muted">Prabhas Patan • Zoned Spatial Map</p>
+          </div>
+          <span class="text-xs text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 font-medium">♿ Accessible Ramps Active</span>
+        </div>
+        <div id="map" class="h-96 w-full rounded-xl overflow-hidden border border-warm"></div>
+      </div>
+
+      <div class="lg:col-span-4 bg-white border border-warm rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+        <div>
+          <h2 class="font-serif-heading font-bold text-sm text-slate-900 mb-3">Chokepoint Density & Stampede Risk</h2>
+          <div id="twinZonesContainer" class="space-y-3"></div>
+        </div>
+
+        <div class="pt-4 border-t border-warm space-y-2">
+          <span class="text-xs font-bold text-warm-muted uppercase tracking-wider block">Transit Balancing</span>
+          <div class="flex justify-between text-xs p-2.5 bg-warm-subtle rounded-xl">
+            <span>Main Parking Lot</span>
+            <span class="font-bold text-emerald-700 font-mono">120/500 Avail</span>
+          </div>
+          <div class="flex justify-between text-xs p-2.5 bg-warm-subtle rounded-xl">
+            <span>Electric Shuttle ETA</span>
+            <span class="font-bold text-amber-700 font-mono">4 Mins</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: E-PASS DESK -->
+  <section id="tab-content-booking" class="hidden max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-7 bg-white border border-warm rounded-3xl p-8 shadow-sm">
+        <div class="border-b border-warm pb-4 mb-6">
+          <span class="text-xs font-bold text-amber-700 uppercase tracking-wider">Official Darshan Reservation</span>
+          <h2 class="text-2xl font-serif-heading font-bold text-slate-900 mt-1">Book Pilgrim E-Pass & Slot</h2>
+          <p class="text-xs text-warm-muted mt-1">Slot load balancing ensures maximum crowd spacing and minimal queue stagnation.</p>
+        </div>
+
+        <form id="passForm" onsubmit="generatePass(event)" class="space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Destination Temple</label>
+              <select id="bookTemple" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white">
+                <option value="Somnath">Shree Somnath Jyotirlinga</option>
+                <option value="Dwarka">Dwarkadhish Jagat Mandir</option>
+                <option value="Ambaji">Shree Ambaji Temple</option>
+                <option value="Pavagadh">Kalika Mata Pavagadh</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Darshan Time Window</label>
+              <select id="bookSlot" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white">
+                <option>08:00 AM - 09:30 AM (Recommended)</option>
+                <option>10:00 AM - 11:30 AM</option>
+                <option>04:00 PM - 05:30 PM</option>
+                <option>07:00 PM - 08:30 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Lead Pilgrim Full Name</label>
+              <input id="bookLead" required placeholder="e.g. Ramesh Sharma" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Govt ID Proof (Passport / ID Number)</label>
+              <input id="bookId" required placeholder="ID / Passport Number" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 font-mono focus:bg-white">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Email Address</label>
+              <div class="flex gap-2">
+                <input id="bookEmail" type="email" required placeholder="name@domain.com" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white">
+                <button type="button" onclick="sendOtp()" id="btnSendOtp" class="px-3 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl font-bold whitespace-nowrap">Send OTP</button>
+              </div>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Enter 6-Digit Email OTP</label>
+              <input id="bookOtp" required placeholder="Enter OTP (Test: 7392)" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 font-mono focus:bg-white">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Mobile Number</label>
+              <input id="bookPhone" required placeholder="+91 98765 43210" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 font-mono focus:bg-white">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Number of Group Members</label>
+              <input id="bookCount" type="number" min="1" max="15" value="3" required class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white">
+            </div>
+          </div>
+
+          <label class="flex items-center gap-2 p-3 rounded-xl bg-warm-subtle border border-warm cursor-pointer">
+            <input id="bookPriority" type="checkbox" class="accent-amber-600 rounded">
+            <span class="text-xs text-slate-700 font-medium">Priority Assistance (Elderly or Differently-Abled)</span>
+          </label>
+
+          <button type="submit" class="w-full py-3 bg-saffron text-white font-bold rounded-xl shadow-md transition text-xs tracking-wider uppercase">
+            Verify OTP & Issue Official E-Pass
+          </button>
+        </form>
+      </div>
+
+      <div class="lg:col-span-5 flex flex-col justify-center items-center">
+        <div id="ticketContainer" class="w-full max-w-sm bg-white border-2 border-dashed border-warm rounded-3xl p-6 shadow-sm space-y-4 text-center">
+          <div class="border-b border-warm pb-3">
+            <span class="text-[10px] font-bold tracking-widest uppercase text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Official Pilgrim Token</span>
+            <h3 id="ticketTemple" class="font-serif-heading font-bold text-base text-slate-900 mt-2">Shree Somnath Jyotirlinga</h3>
+            <p id="ticketId" class="text-xs font-mono text-warm-muted font-bold mt-0.5">PASS-PENDING</p>
+          </div>
+
+          <div class="flex justify-center p-3 bg-warm-bg rounded-2xl border border-warm">
+            <div id="qrcode" class="p-1"></div>
+          </div>
+
+          <div class="space-y-1.5 text-left text-xs bg-warm-subtle p-3.5 rounded-2xl border border-warm">
+            <div class="flex justify-between">
+              <span class="text-warm-muted">Pilgrim Lead:</span>
+              <span id="ticketLead" class="font-bold text-slate-900">Ramesh Sharma</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-warm-muted">Members:</span>
+              <span id="ticketCount" class="font-bold text-slate-900">3 Persons</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-warm-muted">Slot:</span>
+              <span id="ticketSlot" class="font-bold text-amber-800">08:00 AM - 09:30 AM</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-warm-muted">Priority Flag:</span>
+              <span id="ticketPriority" class="font-bold text-emerald-700">Standard Access</span>
+            </div>
+          </div>
+
+          <button onclick="downloadTicketPDF()" id="btnDownloadPdf" class="w-full py-2.5 bg-warm-subtle hover:bg-amber-100 text-amber-900 border border-warm font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+            <i data-lucide="download" class="w-4 h-4"></i> Download E-Pass (PDF)
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: ZERO-NETWORK SAFETY NET -->
+  <section id="tab-content-safety" class="hidden max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-6">
+    <div class="bg-white border border-warm rounded-3xl p-8 shadow-sm">
+      <div class="max-w-2xl space-y-2 mb-8">
+        <span class="text-xs font-bold text-amber-700 uppercase tracking-wider">Zero-Cellular Safety Architecture</span>
+        <h2 class="text-2xl font-serif-heading font-bold text-slate-900">Digital Tether & QR Wristband Resolver</h2>
+        <p class="text-xs text-warm-muted leading-relaxed">
+          During major festival surges, mobile cell towers crash due to traffic saturation. TeerthMitra's offline-first wristband registry allows temple marshals and lost pilgrims to reunite without cellular data or GPS satellites.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-warm-subtle border border-warm rounded-2xl p-6 space-y-4">
+          <h3 class="font-serif-heading font-bold text-sm text-slate-900">Simulate Ground Marshal Scan</h3>
+          <p class="text-xs text-warm-muted">Enter or scan the unique silicone wristband code issued at temple entry gates:</p>
+          <div class="flex gap-2">
+            <input id="wristbandInput" value="TM-101" class="flex-1 bg-white border border-warm rounded-xl px-4 py-2.5 text-xs font-mono text-center text-slate-900 font-bold focus:outline-none">
+            <button onclick="resolveWristband()" class="px-5 py-2.5 bg-saffron hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition">
+              Resolve ID
+            </button>
+          </div>
+          <div id="wristbandOutput" class="hidden bg-white border border-warm p-4 rounded-xl space-y-2 text-xs">
+            <div class="text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">Guardian Link Verified</div>
+            <div class="flex justify-between border-b border-warm pb-1"><span class="text-warm-muted">Registered Pilgrim:</span><strong id="wbChild" class="text-slate-900">Aarav Sharma</strong></div>
+            <div class="flex justify-between border-b border-warm pb-1"><span class="text-warm-muted">Guardian Name:</span><strong id="wbGuardian" class="text-slate-900">Ramesh Sharma</strong></div>
+            <div class="flex justify-between"><span class="text-warm-muted">SOS Emergency Contact:</span><strong id="wbPhone" class="text-emerald-700 font-mono">+91-9876543210</strong></div>
+          </div>
+        </div>
+
+        <div class="bg-warm-subtle border border-warm rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 class="font-serif-heading font-bold text-sm text-slate-900">Queue Assist / Family Re-entry Pass</h3>
+            <p class="text-xs text-warm-muted mt-1 leading-relaxed">
+              Enables pilgrims with elderly relatives or infants to step out of congested queues for washrooms or hydration, preserving their exact spot for 20 minutes.
+            </p>
+          </div>
+          <button onclick="generateReentryToken()" class="w-full py-2.5 bg-white hover:bg-amber-50 border border-warm text-amber-900 font-bold rounded-xl text-xs transition">
+            Generate 20-Min Re-entry Pass
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: HELP & EMERGENCY HUB -->
+  <section id="tab-content-contact" class="hidden max-w-7xl mx-auto px-6 py-8 space-y-8 flex-1 w-full">
+    <div class="bg-gradient-to-br from-amber-50/90 via-white to-orange-50/60 border border-warm rounded-3xl p-8 shadow-sm">
+      <div class="max-w-3xl space-y-2">
+        <span class="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold rounded-full uppercase tracking-wider">
+          24x7 Multi-Agency Assistance
+        </span>
+        <h2 class="text-3xl font-serif-heading font-bold text-slate-900">National Pilgrimage Help & Command Desk</h2>
+        <p class="text-warm-muted text-xs sm:text-sm leading-relaxed">
+          Integrated support for emergency medical evacuation, crowd transit coordination, lost person identification, and pass verification.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-red-50/70 border border-red-200 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+        <div class="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0"><i data-lucide="phone-call" class="w-5 h-5"></i></div>
+        <div>
+          <span class="text-[10px] uppercase font-bold text-red-700 tracking-wider">National Toll-Free</span>
+          <div class="text-lg font-bold font-mono text-red-900 mt-0.5">1800-11-2026</div>
+          <p class="text-[11px] text-red-700/80 mt-0.5">24x7 Multi-lingual</p>
+        </div>
+      </div>
+
+      <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+        <div class="h-10 w-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+        <div>
+          <span class="text-[10px] uppercase font-bold text-amber-800 tracking-wider">Lost Pilgrim Cell</span>
+          <div class="text-lg font-bold font-mono text-amber-950 mt-0.5">1094</div>
+          <p class="text-[11px] text-amber-800/80 mt-0.5">QR Wristband Post</p>
+        </div>
+      </div>
+
+      <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+        <div class="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0"><i data-lucide="heart-pulse" class="w-5 h-5"></i></div>
+        <div>
+          <span class="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Medical SOS Relay</span>
+          <div class="text-lg font-bold font-mono text-emerald-950 mt-0.5">108</div>
+          <p class="text-[11px] text-emerald-800/80 mt-0.5">First Responders on Site</p>
+        </div>
+      </div>
+
+      <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+        <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0"><i data-lucide="accessibility" class="w-5 h-5"></i></div>
+        <div>
+          <span class="text-[10px] uppercase font-bold text-blue-800 tracking-wider">Elderly & Divyangjan</span>
+          <div class="text-lg font-bold font-mono text-blue-950 mt-0.5">14567</div>
+          <p class="text-[11px] text-blue-800/80 mt-0.5">Wheelchair Assistance</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-7 space-y-4">
+        <h3 class="font-serif-heading font-bold text-lg text-slate-900">Shrine Sector Control Rooms</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-white border border-warm rounded-2xl p-5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between border-b border-warm pb-2">
+              <span class="font-bold text-sm text-slate-900">Somnath Trust Desk</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded border border-emerald-200">Online</span>
+            </div>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Phone:</strong> +91 2876 231400</p>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Email:</strong> helpdesk@somnath.org</p>
+          </div>
+
+          <div class="bg-white border border-warm rounded-2xl p-5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between border-b border-warm pb-2">
+              <span class="font-bold text-sm text-slate-900">Dwarkadhish Command</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded border border-emerald-200">Online</span>
+            </div>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Phone:</strong> +91 2892 234080</p>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Email:</strong> control@dwarkadhish.org</p>
+          </div>
+
+          <div class="bg-white border border-warm rounded-2xl p-5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between border-b border-warm pb-2">
+              <span class="font-bold text-sm text-slate-900">Ambaji Devasthan Post</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded border border-emerald-200">Online</span>
+            </div>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Phone:</strong> +91 2749 262144</p>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Email:</strong> support@ambajitemple.in</p>
+          </div>
+
+          <div class="bg-white border border-warm rounded-2xl p-5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between border-b border-warm pb-2">
+              <span class="font-bold text-sm text-slate-900">Pavagadh Authority</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded border border-emerald-200">Online</span>
+            </div>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Phone:</strong> +91 2676 245620</p>
+            <p class="text-xs text-warm-muted"><strong class="text-slate-700">Email:</strong> safety@pavagadhtrust.com</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 bg-white border border-warm rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <h3 class="font-serif-heading font-bold text-base text-slate-900">Direct Support & Special Assistance</h3>
+          <p class="text-xs text-warm-muted mt-1">Submit wheelchair requests, lost person alerts, or transit grievances.</p>
+          <form onsubmit="handleSupportSubmit(event)" class="space-y-3 text-xs mt-4">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Your Full Name</label>
+              <input id="supportName" required placeholder="e.g. Ananya Patel" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Contact Phone</label>
+                <input id="supportPhone" required placeholder="+91 98765 43210" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 font-mono focus:bg-white focus:outline-none">
+              </div>
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Target Shrine</label>
+                <select id="supportTemple" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none">
+                  <option>Somnath</option>
+                  <option>Dwarka</option>
+                  <option>Ambaji</option>
+                  <option>Pavagadh</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Assistance Type</label>
+              <select id="supportType" class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none">
+                <option>Differently-Abled / Wheelchair Priority</option>
+                <option>Lost Belonging / Person Report</option>
+                <option>Pass Rescheduling / Token Error</option>
+                <option>General Safety Feedback</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Brief Details</label>
+              <textarea id="supportDesc" rows="3" required placeholder="Provide pass ID or specific location..." class="w-full bg-warm-subtle border border-warm rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-saffron text-white font-bold rounded-xl shadow-sm hover:bg-amber-700 transition">
+              Dispatch Request to Sector Marshal
+            </button>
+          </form>
+          <div id="supportFeedback" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-mono"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOS MODAL -->
+  <div id="sosModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-red-300 rounded-3xl p-6 max-w-md w-full shadow-xl space-y-4 text-center">
+      <div class="h-12 w-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto"><i data-lucide="alert-octagon" class="w-6 h-6"></i></div>
+      <h3 class="font-serif-heading font-bold text-lg text-slate-900">EMERGENCY SOS DISPATCHED</h3>
+      <p class="text-xs text-warm-muted leading-relaxed">Alert routed to Somnath Command Center. Nearest first responder deployed.</p>
+      <div class="bg-warm-subtle p-3 rounded-2xl text-xs font-mono text-left space-y-1">
+        <div>Responder: <strong>Sector Marshal Unit 04</strong></div>
+        <div>ETA: <strong class="text-emerald-700">90 Seconds</strong></div>
+      </div>
+      <button onclick="closeSOSModal()" class="w-full py-2 bg-slate-900 text-white font-bold rounded-xl text-xs">Dismiss Alert</button>
+    </div>
+  </div>
+
+  <!-- FLOATING TEERTHSEVA AI BUTTON -->
+  <div class="fixed bottom-6 right-6 z-40">
+    <button onclick="toggleAIChat()" class="flex items-center gap-2 px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full shadow-xl hover:shadow-2xl transition duration-200 hover:scale-105">
+      <i data-lucide="bot" class="w-5 h-5"></i>
+      <span class="text-xs font-bold tracking-wide">Ask TeerthSeva AI</span>
+    </button>
+  </div>
+
+  <!-- AI CHAT MODAL POPUP -->
+  <div id="aiChatModal" class="fixed bottom-20 right-6 w-80 sm:w-96 bg-white border border-warm rounded-3xl shadow-2xl z-50 hidden flex flex-col overflow-hidden">
+    <div class="bg-amber-700 p-4 text-white flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="h-7 w-7 rounded-lg bg-amber-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+        <div>
+          <h4 class="text-xs font-bold font-serif-heading">TeerthSeva AI Assistant</h4>
+          <p class="text-[10px] text-amber-200">Multilingual Pilgrim Support</p>
+        </div>
+      </div>
+      <button onclick="toggleAIChat()" class="text-white hover:text-amber-200 text-xs font-bold">✕</button>
+    </div>
+
+    <div id="aiChatMessages" class="p-4 h-72 overflow-y-auto space-y-3 text-xs bg-warm-bg">
+      <div class="bg-amber-50 text-amber-900 border border-amber-200 p-3 rounded-2xl rounded-tl-none">
+        Namaste! I am TeerthSeva AI. Ask me about darshan slots, accessibility ramps, rush timings, or shrine history.
+      </div>
+    </div>
+
+    <form onsubmit="handleAIChatSubmit(event)" class="p-3 bg-white border-t border-warm flex gap-2">
+      <input id="aiChatInput" placeholder="Ask in English, हिन्दी, etc..." required class="flex-1 bg-warm-subtle border border-warm rounded-xl px-3 py-2 text-xs focus:outline-none focus:bg-white text-slate-900">
+      <button type="submit" class="p-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl">
+        <i data-lucide="send" class="w-4 h-4"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-warm-subtle border-t border-warm px-6 py-8 text-center text-xs text-warm-muted">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-serif-heading font-bold text-slate-900">TEERTHMITRA</span>
+        <span>• Autonomous Pilgrimage Safety & Crowd Intelligence Grid</span>
+      </div>
+      <span>Engineered by <strong>Samruddhi Sunil Shinde</strong> • Smart Innovation Grid</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabId) {
+      const tabs = ['heritage', 'twin', 'booking', 'safety', 'contact'];
+      tabs.forEach(t => {
+        const contentEl = document.getElementById(`tab-content-${t}`);
+        const navEl = document.getElementById(`nav-${t}`);
+        if (contentEl) contentEl.classList.add('hidden');
+        if (navEl) navEl.className = 'px-3.5 py-2 rounded-lg text-warm-muted hover:text-slate-900 transition';
+      });
+
+      const activeContent = document.getElementById(`tab-content-${tabId}`);
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeNav) activeNav.className = 'px-3.5 py-2 rounded-lg tab-active transition';
+
+      if (tabId === 'twin' && !mapInitialized) {
+        setTimeout(initMap, 100);
+      }
+    }
+
+    let map, mapMarkers = [];
+    let mapInitialized = false;
+    let activeTemple = 'somnath';
+
+    function initMap() {
+      map = L.map('map').setView([20.8880, 70.4012], 17);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+      mapInitialized = true;
+      loadTempleTwin('somnath');
+    }
+
+    function selectShrineAndGoToTwin(templeId) {
+      switchTab('twin');
+      setTimeout(() => loadTempleTwin(templeId), 150);
+    }
+
+    async function loadTempleTwin(templeId) {
+      activeTemple = templeId;
+      ['somnath', 'dwarka', 'ambaji', 'pavagadh'].forEach(t => {
+        const btn = document.getElementById(`btn-t-${t}`);
+        if(btn) btn.className = (t === templeId) 
+          ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300' 
+          : 'px-3 py-1.5 rounded-lg text-xs font-bold bg-warm-subtle text-warm-muted hover:text-slate-900';
+      });
+
+      const res = await fetch(`/api/temple/${templeId}`);
+      const data = await res.json();
+
+      document.getElementById('mapShrineName').innerText = data.name;
+      document.getElementById('mapShrineLoc').innerText = `${data.city} • Zoned Spatial Map`;
+      document.getElementById('twinHeadcount').innerText = data.headcount.toLocaleString();
+      document.getElementById('twinWait').innerText = `~${data.wait_time}`;
+
+      if (map) {
+        map.setView(data.coords, 17);
+        mapMarkers.forEach(m => map.removeLayer(m));
+        mapMarkers = [];
+      }
+
+      const container = document.getElementById('twinZonesContainer');
+      container.innerHTML = '';
+
+      for (const [key, zone] of Object.entries(data.zones)) {
+        const isCritical = zone.risk === 'Red';
+        const color = isCritical ? '#DC2626' : (zone.risk === 'Yellow' ? '#D97706' : '#16A34A');
+        
+        if (map) {
+          const circle = L.circle(zone.coords, {
+            color: color, fillColor: color, fillOpacity: 0.45, radius: 35
+          }).addTo(map).bindPopup(`<b>${zone.name}</b><br>Density: ${zone.density} p/m²`);
+          circle._zoneKey = key;
+          mapMarkers.push(circle);
+        }
+
+        container.innerHTML += `
+          <div id="card-zone-${key}" class="p-3.5 rounded-xl border ${isCritical ? 'bg-red-50/60 border-red-200' : 'bg-warm-subtle border-warm'} flex flex-col justify-between">
+            <div class="flex justify-between items-center">
+              <span id="badge-${key}" class="text-[10px] font-bold uppercase tracking-wider ${isCritical ? 'text-red-700' : 'text-warm-muted'}">${zone.status}</span>
+              <span id="density-${key}" class="font-mono text-xs font-bold ${isCritical ? 'text-red-700' : 'text-emerald-700'}">${zone.density} p/m²</span>
+            </div>
+            <strong class="text-xs text-slate-900 mt-1">${zone.name}</strong>
+            ${isCritical ? `<button onclick="rerouteChokepoint('${key}')" class="mt-2 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-[10px] transition">Simulate Stampede Reroute</button>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    // Auto-refresh poll for live video feed updates
+    setInterval(async () => {
+      const twinTab = document.getElementById('tab-content-twin');
+      if (twinTab && !twinTab.classList.contains('hidden') && mapInitialized) {
+        try {
+          const res = await fetch(`/api/temple/${activeTemple}`);
+          const data = await res.json();
+          for (const [key, zone] of Object.entries(data.zones)) {
+            const isCritical = zone.risk === 'Red';
+            const color = isCritical ? '#DC2626' : (zone.risk === 'Yellow' ? '#D97706' : '#16A34A');
+            
+            const badge = document.getElementById(`badge-${key}`);
+            const density = document.getElementById(`density-${key}`);
+            if (badge) badge.innerText = zone.status;
+            if (density) density.innerText = `${zone.density} p/m²`;
+
+            const marker = mapMarkers.find(m => m._zoneKey === key);
+            if (marker) {
+              marker.setStyle({ color: color, fillColor: color });
+              marker.setPopupContent(`<b>${zone.name}</b><br>Density: ${zone.density} p/m²`);
+            }
+          }
+        } catch (e) {}
+      }
+    }, 1500);
+
+    async function rerouteChokepoint(zoneKey) {
+      const res = await fetch(`/api/simulate-reroute?temple_id=${activeTemple}&zone_id=${zoneKey}`, { method: 'POST' });
+      const data = await res.json();
+      if(data.success) {
+        alert("Proactive Flow Diversion Activated: Crowd successfully rerouted away from chokepoint.");
+        loadTempleTwin(activeTemple);
+      }
+    }
+
+    function sendOtp() {
+      const email = document.getElementById('bookEmail').value;
+      if (!email) { alert("Please enter a valid email address."); return; }
+      document.getElementById('btnSendOtp').innerText = "OTP Sent (7392)";
+      alert(`OTP sent to ${email}. For demonstration, enter OTP: 7392`);
+    }
+
+    async function generatePass(e) {
+      e.preventDefault();
+      const otp = document.getElementById('bookOtp').value;
+      if (otp !== "7392") {
+        alert("Invalid OTP. Please enter demo OTP: 7392");
+        return;
+      }
+
+      const temple = document.getElementById('bookTemple').value;
+      const lead = document.getElementById('bookLead').value;
+      const count = document.getElementById('bookCount').value;
+      const slot = document.getElementById('bookSlot').value;
+      const isPriority = document.getElementById('bookPriority').checked;
+
+      let passId;
+      try {
+        const res = await fetch('/api/book-pass', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            temple: temple,
+            group_lead: lead,
+            phone: document.getElementById('bookPhone').value,
+            members_count: Number(count),
+            slot_time: slot,
+            priority_elderly: isPriority
+          })
+        });
+        const data = await res.json();
+        passId = data.pass_id;
+      } catch (err) {
+        passId = `TM-${temple.substring(0,3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+
+      document.getElementById('ticketTemple').innerText = `Shree ${temple} Temple`;
+      document.getElementById('ticketId').innerText = passId;
+      document.getElementById('ticketLead').innerText = lead;
+      document.getElementById('ticketCount').innerText = `${count} Persons`;
+      document.getElementById('ticketSlot').innerText = slot;
+      document.getElementById('ticketPriority').innerText = isPriority ? "Priority Assist Active" : "Standard Access";
+
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: `TEERTHMITRA-PASS:${passId}|LEAD:${lead}|COUNT:${count}`,
+        width: 128,
+        height: 128
+      });
+
+      alert(`✓ E-Pass issued successfully for ${lead}! You can now download the PDF.`);
+    }
+
+    function downloadTicketPDF() {
+      const element = document.getElementById('ticketContainer');
+      const opt = {
+        margin: 10,
+        filename: 'TeerthMitra_Official_EPass.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    async function resolveWristband() {
+      const id = document.getElementById('wristbandInput').value;
+      const res = await fetch(`/api/wristband/${id}`);
+      const data = await res.json();
+      if (!data.error) {
+        document.getElementById('wbChild').innerText = `${data.child} (Linked)`;
+        document.getElementById('wbGuardian').innerText = data.guardian;
+        document.getElementById('wbPhone').innerText = data.phone;
+        document.getElementById('wristbandOutput').classList.remove('hidden');
+      } else {
+        alert("Wristband ID not found.");
+      }
+    }
+
+    function generateReentryToken() {
+      const token = `RE-${Math.floor(100 + Math.random() * 900)}`;
+      alert(`✓ Re-entry Token Generated: ${token}\nValid for 20 minutes at bypass gates.`);
+    }
+
+    function handleSupportSubmit(e) {
+      e.preventDefault();
+      const temple = document.getElementById('supportTemple').value;
+      const ticketRef = `REQ-${temple.substring(0,3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+      const el = document.getElementById('supportFeedback');
+      el.classList.remove('hidden');
+      el.innerHTML = `✓ Request Lodged: <strong>${ticketRef}</strong><br>Sector Marshal dispatched within 5 mins.`;
+    }
+
+    function triggerVoiceAssistance() {
+      const msg = new SpeechSynthesisUtterance("Welcome to TeerthMitra National Pilgrimage Safety Grid. Accessible ramps are active at all primary shrine gates.");
+      window.speechSynthesis.speak(msg);
+    }
+
+    function openSOSModal() { document.getElementById('sosModal').classList.remove('hidden'); }
+    function closeSOSModal() { document.getElementById('sosModal').classList.add('hidden'); }
+
+    // TeerthSeva AI Chat Functions
+    function toggleAIChat() {
+      const modal = document.getElementById('aiChatModal');
+      modal.classList.toggle('hidden');
+    }
+
+    async function handleAIChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('aiChatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const chatContainer = document.getElementById('aiChatMessages');
+      chatContainer.innerHTML += `
+        <div class="bg-slate-900 text-white p-3 rounded-2xl rounded-tr-none ml-auto max-w-[85%] break-words">
+          ${msg}
+        </div>
+      `;
+      input.value = '';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      const loaderId = `loader-${Date.now()}`;
+      chatContainer.innerHTML += `
+        <div id="${loaderId}" class="bg-amber-50 text-amber-800 border border-amber-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] animate-pulse">
+          Thinking...
+        </div>
+      `;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, shrine: activeTemple })
+        });
+        const data = await res.json();
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        chatContainer.innerHTML += `
+          <div class="bg-amber-50 text-amber-900 border border-amber-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] break-words">
+            ${data.reply}
+          </div>
+        `;
+      } catch (err) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        chatContainer.innerHTML += `
+          <div class="bg-red-50 text-red-800 border border-red-200 p-3 rounded-2xl rounded-tl-none max-w-[85%]">
+            Sorry, unable to connect to the AI assistant right now.
+          </div>
+        `;
+      }
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    window.onload = function() {
+      new QRCode(document.getElementById('qrcode'), { text: "TEERTHMITRA-INITIAL", width: 128, height: 128 });
+    };
+  </script>
+</body>
+</html>
