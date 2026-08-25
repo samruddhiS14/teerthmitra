@@ -1,7 +1,4 @@
-fastapi==0.110.0
-uvicorn==0.28.0
-pydantic==2.6.4
-ultralytics==8.1.27
-opencv-python==4.9.0.80
-torch==2.2.1
-torchvision==0.17.1
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.4
+requests>=2.31.0
