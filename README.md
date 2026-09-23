@@ -1,4 +1,4 @@
-# TeerthMitra — National Pilgrimage Safety & Crowd Intelligence Grid
+# TeerthMitra 
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-Edge%20Vision-00FFFF)](https://ultralytics.com)
